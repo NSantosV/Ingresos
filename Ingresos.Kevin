@@ -1,0 +1,75 @@
+package control_ingresos_egresos_persona;
+
+import java.io.*;
+import java.util.*;
+
+public class Ingresos {
+
+    public static void registrarIngreso(String idCuenta) {
+        Scanner scanner = new Scanner(System.in);
+        Random random = new Random();
+
+        // Generar correlativo de 6 digitos
+        String correlativo = String.format("%06d", random.nextInt(1000000));
+
+        System.out.println("\nRegistro de Ingreso");
+        System.out.println("Cuenta asociada: " + idCuenta);
+
+        System.out.print("Ingrese Monto del ingreso: ");
+        String monto = scanner.nextLine();
+
+        System.out.print("Ingrese Descripcion: ");
+        String descripcion = scanner.nextLine();
+
+        System.out.print("Ingrese Fecha (dd/mm/yyyy): ");
+        String fecha = scanner.nextLine();
+
+        // Registro formateado
+        String registro = correlativo + "," + idCuenta + "," + monto + "," + descripcion + "," + fecha;
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("Ingresos.txt", true))) {
+            writer.write(registro);
+            writer.newLine();
+            System.out.println("Ingreso guardado exitosamente. Correlativo: " + correlativo);
+        } catch (IOException e) {
+            System.err.println("Error al guardar el ingreso: " + e.getMessage());
+        }
+    }
+
+    public static void verRegistrosPorCuenta(String idCuenta) {
+        System.out.println("\nIngresos para la cuenta: " + idCuenta);
+
+        try (BufferedReader reader = new BufferedReader(new FileReader("Ingresos.txt"))) {
+            String linea;
+            boolean encontrado = false;
+            while ((linea = reader.readLine()) != null) {
+                String[] datos = linea.split(",");
+                if (datos[1].equals(idCuenta)) {
+                    System.out.println(linea);
+                    encontrado = true;
+                }
+            }
+            if (!encontrado) {
+                System.out.println("No se encontraron ingresos para esta cuenta.");
+            }
+        } catch (IOException e) {
+            System.err.println("Error al leer el archivo: " + e.getMessage());
+        }
+    }
+
+    public static double obtenerTotalIngresos(String idCuenta) {
+        double total = 0.0;
+        try (BufferedReader reader = new BufferedReader(new FileReader("Ingresos.txt"))) {
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                String[] datos = linea.split(",");
+                if (datos[1].equals(idCuenta)) {
+                    total += Double.parseDouble(datos[2]);
+                }
+            }
+        } catch (IOException | NumberFormatException e) {
+            System.err.println("Error calculando ingresos: " + e.getMessage());
+        }
+        return total;
+    }
+}
